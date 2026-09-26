@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My API</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f4f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .box {
+      width: 90%;
+      max-width: 400px;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    h2, h3 {
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+    }
+
+    hr {
+      margin: 25px 0;
+    }
+
+    #result {
+      margin-top: 20px;
+      text-align: center;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+
+    <h2>🔐 My API</h2>
+
+    <!-- REGISTER -->
+    <h3>Register</h3>
+
+    <input
+      type="text"
+      id="regUsername"
+      placeholder="Username"
+    >
+
+    <input
+      type="password"
+      id="regPassword"
+      placeholder="Password"
+    >
+
+    <button onclick="register()">
+      Register
+    </button>
+
+
+    <hr>
+
+
+    <!-- LOGIN -->
+    <h3>Login</h3>
+
+    <input
+      type="text"
+      id="username"
+      placeholder="Username"
+    >
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+    >
+
+    <button onclick="login()">
+      Login
+    </button>
+
+
+    <div id="result"></div>
+
+  </div>
+
+
+  <script>
+
+    // =========================
+    // REGISTER
+    // =========================
+
+    async function register() {
+
+      const username =
+        document.getElementById("regUsername").value;
+
+      const password =
+        document.getElementById("regPassword").value;
+
+      const result =
+        document.getElementById("result");
+
+
+      try {
+
+        const response = await fetch("/register", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (data.success) {
+
+          result.innerHTML =
+            "✅ Registration successful!<br>" +
+            "Username: " +
+            data.user.username;
+
+        } else {
+
+          result.innerHTML =
+            "❌ " + data.message;
+
+        }
+
+      } catch (error) {
+
+        result.innerHTML =
+          "❌ Server connection failed";
+
+      }
+
+    }
+
+
+    // =========================
+    // LOGIN
+    // =========================
+
+    async function login() {
+
+      const username =
+        document.getElementById("username").value;
+
+      const password =
+        document.getElementById("password").value;
+
+      const result =
+        document.getElementById("result");
+
+
+      try {
+
+        const response = await fetch("/login", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (data.success) {
+
+          localStorage.setItem(
+            "token",
+            data.token
+          );
+
+
+          result.innerHTML =
+            "✅ Login successful!<br><br>" +
+            "Username: " +
+            data.user.username +
+            "<br>" +
+            "Role: " +
+            data.user.role;
+
+        } else {
+
+          result.innerHTML =
+            "❌ " + data.message;
+
+        }
+
+      } catch (error) {
+
+        result.innerHTML =
+          "❌ Server connection failed";
+
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
