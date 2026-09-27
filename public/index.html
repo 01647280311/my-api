@@ -1,248 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My API Dashboard</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef2ff,#f8fafc);color:#172033}
-    .container{width:92%;max-width:900px;margin:30px auto}
-    .card{background:#fff;border-radius:20px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
-    h1,h2{margin-top:0}
-    .muted{color:#64748b}
-    input{width:100%;padding:13px;margin:7px 0;border:1px solid #d7dce5;border-radius:10px;font-size:15px}
-    button{border:0;border-radius:10px;padding:12px 16px;background:#2563eb;color:#fff;font-size:15px;cursor:pointer;margin-top:8px}
-    button.secondary{background:#475569}
-    button.danger{background:#dc2626}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
-    .stat{padding:20px;border-radius:16px;background:#f8fafc;border:1px solid #e5e7eb}
-    .stat strong{display:block;font-size:24px;margin-top:8px}
-    .hidden{display:none}
-    #message{margin-top:15px;padding:12px;border-radius:10px}
-    .success{background:#dcfce7;color:#166534}
-    .error{background:#fee2e2;color:#991b1b}
-    pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;padding:15px;border-radius:12px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My API • Secure Login</title>
+<style>
+*{box-sizing:border-box}
+:root{--primary:#4f46e5;--primary2:#7c3aed;--text:#172033;--muted:#64748b}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef2ff 0%,#f5f3ff 50%,#f8fafc 100%);color:var(--text)}
+.container{width:92%;max-width:960px;margin:35px auto}
+.auth-wrap{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;background:#fff;border-radius:26px;box-shadow:0 20px 60px rgba(30,41,59,.14)}
+.brand{padding:45px;background:linear-gradient(145deg,var(--primary),var(--primary2));color:#fff;display:flex;flex-direction:column;justify-content:center}
+.logo{width:62px;height:62px;border-radius:18px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:30px;margin-bottom:22px}
+.brand h1{font-size:34px;margin:0 0 12px}
+.brand p{line-height:1.6;opacity:.9;margin:0}
+.features{margin-top:28px;display:grid;gap:12px}
+.feature{padding:12px 14px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.08)}
+.form-card{padding:40px}
+.tabs{display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:25px}
+.tab{flex:1;border:0;background:transparent;color:#64748b;padding:11px;border-radius:9px;cursor:pointer;font-size:15px}
+.tab.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.08);font-weight:bold}
+.form{display:none}.form.active{display:block}
+h2{margin:0 0 8px;font-size:25px}.subtitle{color:var(--muted);margin:0 0 22px}
+label{display:block;font-size:14px;font-weight:bold;margin:14px 0 7px}
+.input-wrap{position:relative}
+input{width:100%;padding:14px 45px 14px 14px;border:1px solid #d7dce5;border-radius:11px;font-size:15px;outline:none;transition:.2s}
+input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;font-size:18px;color:#64748b}
+.main-btn{width:100%;padding:14px;border:0;border-radius:11px;background:linear-gradient(90deg,var(--primary),var(--primary2));color:#fff;font-size:16px;font-weight:bold;cursor:pointer;margin-top:20px;box-shadow:0 8px 18px rgba(79,70,229,.22)}
+.main-btn:active{transform:translateY(1px)}
+#authMessage{margin-top:16px;padding:11px;border-radius:10px;display:none;font-size:14px}
+.success{display:block!important;background:#dcfce7;color:#166534}.error{display:block!important;background:#fee2e2;color:#991b1b}
+.dashboard{background:#fff;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(30,41,59,.12)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px;margin:20px 0}
+.stat{padding:19px;border-radius:16px;background:#f8fafc;border:1px solid #e5e7eb}.stat strong{display:block;font-size:23px;margin-top:7px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.action{border:0;border-radius:10px;padding:12px 16px;background:var(--primary);color:#fff;cursor:pointer}.secondary{background:#475569}.danger{background:#dc2626;border:0;border-radius:10px;padding:11px 15px;color:#fff;cursor:pointer}
+.hidden{display:none!important}
+pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;padding:15px;border-radius:12px}
+@media(max-width:720px){.auth-wrap{grid-template-columns:1fr}.brand{padding:30px}.brand h1{font-size:28px}.features{display:none}.form-card{padding:28px 22px}.container{margin:20px auto}}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div id="authCard" class="card">
-      <h1>🔐 My API</h1>
-      <p class="muted">Register or login to continue.</p>
-
-      <h2>Register</h2>
-      <input id="regUsername" type="text" placeholder="Username">
-      <input id="regPassword" type="password" placeholder="Password">
-      <button onclick="register()">Create Account</button>
-
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-
-      <h2>Login</h2>
-      <input id="username" type="text" placeholder="Username">
-      <input id="password" type="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-      <div id="authMessage"></div>
-    </div>
-
-    <div id="dashboard" class="hidden">
-      <div class="card">
-        <div class="top">
-          <div>
-            <p class="muted">Welcome back 👋</p>
-            <h1 id="welcomeName">Dashboard</h1>
-          </div>
-          <button class="danger" onclick="logout()">Logout</button>
-        </div>
-
-        <div class="grid">
-          <div class="stat">
-            <span class="muted">Username</span>
-            <strong id="dashUsername">-</strong>
-          </div>
-          <div class="stat">
-            <span class="muted">Role</span>
-            <strong id="dashRole">-</strong>
-          </div>
-          <div class="stat">
-            <span class="muted">Login Status</span>
-            <strong>🟢 Active</strong>
-          </div>
-        </div>
-
-        <h2>Quick Actions</h2>
-        <div class="actions">
-          <button onclick="loadProfile()">👤 My Profile</button>
-          <button id="adminButton" class="secondary hidden" onclick="loadAdminUsers()">🛡️ Admin Panel</button>
-        </div>
-
-        <div id="profileBox" class="hidden" style="margin-top:20px">
-          <h2>Profile</h2>
-          <pre id="profileData"></pre>
-        </div>
-
-        <div id="adminBox" class="hidden" style="margin-top:20px">
-          <h2>Admin Users</h2>
-          <pre id="adminData"></pre>
-        </div>
+<div class="container">
+  <div id="authCard" class="auth-wrap">
+    <section class="brand">
+      <div class="logo">🔐</div>
+      <h1>My API</h1>
+      <p>Secure access to your account with a simple and modern login experience.</p>
+      <div class="features">
+        <div class="feature">🛡️ Secure authentication</div>
+        <div class="feature">⚡ Fast API connection</div>
+        <div class="feature">👤 Personal dashboard</div>
       </div>
-    </div>
+    </section>
+
+    <section class="form-card">
+      <div class="tabs">
+        <button id="loginTab" class="tab active" onclick="switchTab('login')">Login</button>
+        <button id="registerTab" class="tab" onclick="switchTab('register')">Create Account</button>
+      </div>
+
+      <div id="loginForm" class="form active">
+        <h2>Welcome back 👋</h2>
+        <p class="subtitle">Login to continue to your dashboard.</p>
+        <label>Username</label>
+        <input id="username" type="text" placeholder="Enter your username" autocomplete="username">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input id="password" type="password" placeholder="Enter your password" autocomplete="current-password">
+          <button class="eye" type="button" onclick="togglePassword('password',this)">👁️</button>
+        </div>
+        <button class="main-btn" onclick="login()">Login securely →</button>
+      </div>
+
+      <div id="registerForm" class="form">
+        <h2>Create account ✨</h2>
+        <p class="subtitle">Create your account to get started.</p>
+        <label>Username</label>
+        <input id="regUsername" type="text" placeholder="Choose a username" autocomplete="username">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input id="regPassword" type="password" placeholder="Create a password" autocomplete="new-password">
+          <button class="eye" type="button" onclick="togglePassword('regPassword',this)">👁️</button>
+        </div>
+        <button class="main-btn" onclick="register()">Create Account →</button>
+      </div>
+
+      <div id="authMessage"></div>
+    </section>
   </div>
 
-  <script>
-    const tokenKey = "token";
+  <div id="dashboard" class="hidden">
+    <div class="dashboard">
+      <div class="top">
+        <div><p class="muted">Welcome back 👋</p><h1 id="welcomeName">Dashboard</h1></div>
+        <button class="danger" onclick="logout()">Logout</button>
+      </div>
+      <div class="grid">
+        <div class="stat"><span class="muted">Username</span><strong id="dashUsername">-</strong></div>
+        <div class="stat"><span class="muted">Role</span><strong id="dashRole">-</strong></div>
+        <div class="stat"><span class="muted">Status</span><strong>🟢 Active</strong></div>
+      </div>
+      <h2>Quick Actions</h2>
+      <div class="actions">
+        <button class="action" onclick="loadProfile()">👤 My Profile</button>
+        <button id="adminButton" class="action secondary hidden" onclick="loadAdminUsers()">🛡️ Admin Panel</button>
+      </div>
+      <div id="profileBox" class="hidden" style="margin-top:20px"><h2>Profile</h2><pre id="profileData"></pre></div>
+      <div id="adminBox" class="hidden" style="margin-top:20px"><h2>Admin Users</h2><pre id="adminData"></pre></div>
+    </div>
+  </div>
+</div>
 
-    function showMessage(message, type="success") {
-      const el = document.getElementById("authMessage");
-      el.className = type;
-      el.innerHTML = message;
-    }
+<script>
+const tokenKey="token";
 
-    async function register() {
-      const username = document.getElementById("regUsername").value.trim();
-      const password = document.getElementById("regPassword").value;
-
-      if (!username || !password) {
-        showMessage("Username and password are required", "error");
-        return;
-      }
-
-      try {
-        const response = await fetch("/register", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({username, password})
-        });
-        const data = await response.json();
-
-        if (data.success) {
-          showMessage("✅ Registration successful. Now login.");
-          document.getElementById("username").value = username;
-          document.getElementById("password").value = "";
-        } else {
-          showMessage("❌ " + data.message, "error");
-        }
-      } catch (e) {
-        showMessage("❌ Server connection failed", "error");
-      }
-    }
-
-    async function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-
-      if (!username || !password) {
-        showMessage("Username and password are required", "error");
-        return;
-      }
-
-      try {
-        const response = await fetch("/login", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({username, password})
-        });
-        const data = await response.json();
-
-        if (!data.success) {
-          showMessage("❌ " + data.message, "error");
-          return;
-        }
-
-        localStorage.setItem(tokenKey, data.token);
-        showDashboard(data.user);
-      } catch (e) {
-        showMessage("❌ Server connection failed", "error");
-      }
-    }
-
-    function showDashboard(user) {
-      document.getElementById("authCard").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      document.getElementById("welcomeName").textContent = user.username + "'s Dashboard";
-      document.getElementById("dashUsername").textContent = user.username;
-      document.getElementById("dashRole").textContent = user.role || "user";
-
-      if ((user.role || "user") === "admin") {
-        document.getElementById("adminButton").classList.remove("hidden");
-      } else {
-        document.getElementById("adminButton").classList.add("hidden");
-      }
-    }
-
-    async function loadProfile() {
-      const token = localStorage.getItem(tokenKey);
-      if (!token) return logout();
-
-      try {
-        const response = await fetch("/profile", {
-          headers: {"Authorization":"Bearer " + token}
-        });
-        const data = await response.json();
-
-        document.getElementById("profileBox").classList.remove("hidden");
-        document.getElementById("profileData").textContent = JSON.stringify(data, null, 2);
-
-        if (response.status === 401 || response.status === 403) logout();
-      } catch (e) {
-        document.getElementById("profileBox").classList.remove("hidden");
-        document.getElementById("profileData").textContent = "Server connection failed";
-      }
-    }
-
-    async function loadAdminUsers() {
-      const token = localStorage.getItem(tokenKey);
-      if (!token) return logout();
-
-      try {
-        const response = await fetch("/admin/users", {
-          headers: {"Authorization":"Bearer " + token}
-        });
-        const data = await response.json();
-
-        document.getElementById("adminBox").classList.remove("hidden");
-        document.getElementById("adminData").textContent = JSON.stringify(data, null, 2);
-
-        if (response.status === 401 || response.status === 403) {
-          document.getElementById("adminData").textContent = data.message || "Admin access required";
-        }
-      } catch (e) {
-        document.getElementById("adminBox").classList.remove("hidden");
-        document.getElementById("adminData").textContent = "Server connection failed";
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem(tokenKey);
-      document.getElementById("dashboard").classList.add("hidden");
-      document.getElementById("authCard").classList.remove("hidden");
-      document.getElementById("profileBox").classList.add("hidden");
-      document.getElementById("adminBox").classList.add("hidden");
-      document.getElementById("adminButton").classList.add("hidden");
-      showMessage("You have been logged out.");
-    }
-
-    window.addEventListener("load", async () => {
-      const token = localStorage.getItem(tokenKey);
-      if (!token) return;
-
-      try {
-        const response = await fetch("/profile", {
-          headers: {"Authorization":"Bearer " + token}
-        });
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          showDashboard(data.user);
-        } else {
-          localStorage.removeItem(tokenKey);
-        }
-      } catch (e) {
-        // Keep login screen if the server is temporarily unavailable.
-      }
-    });
-  </script>
+function switchTab(tab){
+  const login=tab==="login";
+  document.getElementById("loginForm").classList.toggle("active",login);
+  document.getElementById("registerForm").classList.toggle("active",!login);
+  document.getElementById("loginTab").classList.toggle("active",login);
+  document.getElementById("registerTab").classList.toggle("active",!login);
+  clearMessage();
+}
+function togglePassword(id,btn){
+  const input=document.getElementById(id);
+  input.type=input.type==="password"?"text":"password";
+  btn.textContent=input.type==="password"?"👁️":"🙈";
+}
+function showMessage(message,type){
+  const el=document.getElementById("authMessage");
+  el.textContent=message;
+  el.className=type;
+}
+function clearMessage(){
+  const el=document.getElementById("authMessage");
+  el.textContent="";el.className="";
+}
+async function register(){
+  const username=document.getElementById("regUsername").value.trim();
+  const password=document.getElementById("regPassword").value;
+  if(!username||!password){showMessage("Username and password are required","error");return}
+  try{
+    const response=await fetch("/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
+    const data=await response.json();
+    if(data.success){
+      document.getElementById("username").value=username;
+      document.getElementById("password").value="";
+      showMessage("✅ Account created successfully. Please login.","success");
+      switchTab("login");
+    }else showMessage("❌ "+data.message,"error");
+  }catch(e){showMessage("❌ Server connection failed","error")}
+}
+async function login(){
+  const username=document.getElementById("username").value.trim();
+  const password=document.getElementById("password").value;
+  if(!username||!password){showMessage("Username and password are required","error");return}
+  try{
+    const response=await fetch("/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
+    const data=await response.json();
+    if(!data.success){showMessage("❌ "+data.message,"error");return}
+    localStorage.setItem(tokenKey,data.token);
+    showDashboard(data.user);
+  }catch(e){showMessage("❌ Server connection failed","error")}
+}
+function showDashboard(user){
+  document.getElementById("authCard").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("welcomeName").textContent=user.username+"'s Dashboard";
+  document.getElementById("dashUsername").textContent=user.username;
+  document.getElementById("dashRole").textContent=user.role||"user";
+  document.getElementById("adminButton").classList.toggle("hidden",(user.role||"user")!=="admin");
+}
+async function loadProfile(){
+  const token=localStorage.getItem(tokenKey);if(!token)return logout();
+  try{
+    const response=await fetch("/profile",{headers:{"Authorization":"Bearer "+token}});
+    const data=await response.json();
+    document.getElementById("profileBox").classList.remove("hidden");
+    document.getElementById("profileData").textContent=JSON.stringify(data,null,2);
+    if(response.status===401||response.status===403)logout();
+  }catch(e){document.getElementById("profileBox").classList.remove("hidden");document.getElementById("profileData").textContent="Server connection failed"}
+}
+async function loadAdminUsers(){
+  const token=localStorage.getItem(tokenKey);if(!token)return logout();
+  try{
+    const response=await fetch("/admin/users",{headers:{"Authorization":"Bearer "+token}});
+    const data=await response.json();
+    document.getElementById("adminBox").classList.remove("hidden");
+    document.getElementById("adminData").textContent=JSON.stringify(data,null,2);
+  }catch(e){document.getElementById("adminBox").classList.remove("hidden");document.getElementById("adminData").textContent="Server connection failed"}
+}
+function logout(){
+  localStorage.removeItem(tokenKey);
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("authCard").classList.remove("hidden");
+  document.getElementById("profileBox").classList.add("hidden");
+  document.getElementById("adminBox").classList.add("hidden");
+  document.getElementById("adminButton").classList.add("hidden");
+  switchTab("login");
+  showMessage("You have been logged out.","success");
+}
+window.addEventListener("load",async()=>{
+  const token=localStorage.getItem(tokenKey);if(!token)return;
+  try{
+    const response=await fetch("/profile",{headers:{"Authorization":"Bearer "+token}});
+    const data=await response.json();
+    if(response.ok&&data.success)showDashboard(data.user);
+    else localStorage.removeItem(tokenKey);
+  }catch(e){}
+});
+</script>
 </body>
 </html>
