@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My API • Admin Panel</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+.header{background:linear-gradient(135deg,#111827,#312e81);color:#fff;padding:22px 5%;display:flex;justify-content:space-between;align-items:center}
+.header h1{margin:0;font-size:24px}.badge{background:#22c55e;padding:7px 12px;border-radius:20px;font-size:13px;font-weight:bold}
+.wrap{width:92%;max-width:1100px;margin:25px auto}.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 10px 35px rgba(15,23,42,.08);margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:15px}.stat{padding:20px;border-radius:15px;background:#f8fafc;border:1px solid #e5e7eb}.stat span{color:#64748b}.stat strong{display:block;font-size:28px;margin-top:8px}
+button{border:0;border-radius:10px;padding:11px 16px;cursor:pointer;font-weight:bold}.refresh{background:#4f46e5;color:#fff}.logout{background:#dc2626;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:15px}th,td{text-align:left;padding:13px;border-bottom:1px solid #e5e7eb}th{background:#f8fafc}.role{display:inline-block;padding:5px 9px;border-radius:20px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:bold}
+.error{padding:14px;background:#fee2e2;color:#991b1b;border-radius:10px}.muted{color:#64748b}
+@media(max-width:650px){.header{padding:18px 4%}.header h1{font-size:20px}table{font-size:13px}.wrap{width:94%}}
+</style>
+</head>
+<body>
+<header class="header">
+  <h1>🛡️ My API Admin Panel</h1>
+  <div><span class="badge">ADMIN</span> <button class="logout" onclick="logout()">Logout</button></div>
+</header>
+
+<main class="wrap">
+  <div id="message"></div>
+  <div class="card">
+    <h2>Admin Dashboard</h2>
+    <p class="muted">Manage and view registered users.</p>
+    <div class="stats">
+      <div class="stat"><span>Total Users</span><strong id="totalUsers">-</strong></div>
+      <div class="stat"><span>Admin Users</span><strong id="adminUsers">-</strong></div>
+      <div class="stat"><span>Normal Users</span><strong id="normalUsers">-</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="refresh" onclick="loadUsers()">🔄 Refresh Users</button>
+    <div id="tableBox"><p class="muted">Loading users...</p></div>
+  </div>
+</main>
+
+<script>
+const tokenKey="token";
+
+function logout(){localStorage.removeItem(tokenKey);location.href="/";}
+
+async function loadUsers(){
+  const token=localStorage.getItem(tokenKey);
+  if(!token){location.href="/";return}
+  try{
+    const response=await fetch("/admin/users",{headers:{"Authorization":"Bearer "+token}});
+    const data=await response.json();
+    if(response.status===401||response.status===403){
+      document.getElementById("message").innerHTML='<div class="error">⛔ Admin access required. Please login with an admin account.</div>';
+      setTimeout(()=>location.href="/",1200);
+      return;
+    }
+    if(!data.success)throw new Error(data.message||"Unable to load users");
+    const users=data.users||[];
+    document.getElementById("totalUsers").textContent=users.length;
+    const admins=users.filter(u=>u.role==="admin").length;
+    document.getElementById("adminUsers").textContent=admins;
+    document.getElementById("normalUsers").textContent=users.length-admins;
+    document.getElementById("tableBox").innerHTML=users.length?
+      '<table><thead><tr><th>ID</th><th>Username</th><th>Role</th></tr></thead><tbody>'+
+      users.map(u=>'<tr><td>'+u.id+'</td><td>'+escapeHtml(u.username)+'</td><td><span class="role">'+(u.role||"user")+'</span></td></tr>').join('')+
+      '</tbody></table>':'<p class="muted">No users found.</p>';
+  }catch(e){
+    document.getElementById("tableBox").innerHTML='<div class="error">❌ Server connection failed.</div>';
+  }
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+
+window.addEventListener("load",loadUsers);
+</script>
+</body>
+</html>
