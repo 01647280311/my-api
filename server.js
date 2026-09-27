@@ -106,6 +106,36 @@ app.get("/admin/users", authenticateToken, requireAdmin, (req, res) => {
   res.json({success:true,users:safeUsers});
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("API running");
+async function ensureAdmin() {
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminUsername || !adminPassword) return;
+
+  const users = JSON.parse(fs.readFileSync(file, "utf8"));
+  const existing = users.find(user => user.username === adminUsername);
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+  if (existing) {
+    existing.role = "admin";
+    existing.password = hashedPassword;
+  } else {
+    users.push({
+      id: users.length + 1,
+      username: adminUsername,
+      password: hashedPassword,
+      role: "admin"
+    });
+  }
+
+  fs.writeFileSync(file, JSON.stringify(users, null, 2));
+}
+
+ensureAdmin().then(() => {
+  app.listen(process.env.PORT || 3000, "0.0.0.0", () => {
+    console.log("API running");
+  });
+}).catch(err => {
+  console.error("Admin setup failed:", err);
+  process.exit(1);
 });
