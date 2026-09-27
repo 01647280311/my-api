@@ -291,6 +291,7 @@ function requireAdmin(req, res, next) {
   next();
 } 
 // Server চালু
-app.listen(3000, () => {
-  console.log("API running on port 3000");
+app.listen(process.env.PORT || 3000, () => {
+  console.log("API running");
 });
+
