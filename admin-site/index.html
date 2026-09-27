@@ -6,19 +6,23 @@
 <title>My API Admin</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#182230}
+button,input,select{font:inherit}.hidden{display:none}
 .login{min-height:100vh;display:grid;place-items:center;padding:20px}
 .card{width:min(420px,100%);background:#fff;border-radius:22px;padding:32px;box-shadow:0 20px 60px #18223020}
 .brand{font-size:25px;font-weight:800;margin-bottom:6px}.sub{color:#697586;margin-bottom:25px}
-input{width:100%;padding:14px 15px;margin:8px 0;border:1px solid #d9e0ea;border-radius:12px;font-size:15px;outline:none}
-button{border:0;border-radius:12px;padding:13px 18px;font-weight:700;cursor:pointer}
-.primary{width:100%;background:#182230;color:white;margin-top:10px}.logout{background:#fff;border:1px solid #d9e0ea}
-.msg{min-height:22px;margin-top:12px;font-size:14px}
-.hidden{display:none}.app{min-height:100vh}.top{background:#182230;color:#fff;padding:18px 5%;display:flex;align-items:center;justify-content:space-between}.badge{font-size:11px;background:#fff2;border:1px solid #fff4;padding:6px 9px;border-radius:20px;margin-left:8px}
-.wrap{width:min(1100px,92%);margin:30px auto}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}.stat{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 30px #18223010}.num{font-size:30px;font-weight:800;margin-top:8px}.label{color:#697586}
-.panel{background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 30px #18223010;overflow:auto}
-table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;border-bottom:1px solid #edf0f4}th{color:#697586;font-size:13px}.role{font-weight:700}.empty{text-align:center;color:#697586;padding:25px}
-@media(max-width:700px){.stats{grid-template-columns:1fr}.top{padding:15px}.wrap{width:94%}.title{gap:12px;align-items:flex-start;flex-direction:column}}
+input,select{width:100%;padding:13px 14px;border:1px solid #d9e0ea;border-radius:12px;background:#fff;outline:none}
+input:focus,select:focus{border-color:#6875f5}.primary{width:100%;border:0;border-radius:12px;padding:13px 18px;font-weight:700;cursor:pointer;background:#182230;color:#fff;margin-top:10px}
+.msg{min-height:22px;margin-top:12px;font-size:14px}.app{min-height:100vh}.layout{display:flex;min-height:100vh}
+.side{width:240px;background:#182230;color:#fff;padding:24px 16px;position:fixed;top:0;bottom:0}
+.side h2{font-size:19px;margin:0 8px 28px}.nav{display:grid;gap:7px}.nav button{background:transparent;color:#dce3ef;border:0;text-align:left;padding:13px 12px;border-radius:11px;cursor:pointer;font-weight:600}.nav button:hover,.nav button.active{background:#fff1;color:#fff}
+.main{margin-left:240px;width:calc(100% - 240px);padding:22px 4% 40px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0 0 5px}.label{color:#697586;font-size:14px}.logout{background:#fff;border:1px solid #d9e0ea;border-radius:11px;padding:11px 15px;font-weight:700;cursor:pointer}
+.badge{font-size:11px;background:#e9eef8;padding:6px 9px;border-radius:20px;margin-left:8px}.status-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#20a464;margin-right:7px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}.stat,.panel{background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 30px #18223010}.num{font-size:30px;font-weight:800;margin-top:8px}.panel{margin-top:18px}.panel h3{margin:0 0 5px}.toolbar{display:grid;grid-template-columns:1fr 180px auto;gap:10px;margin:18px 0}
+.refresh{border:0;border-radius:12px;padding:12px 17px;font-weight:700;cursor:pointer;background:#182230;color:#fff}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;border-bottom:1px solid #edf0f4}th{color:#697586;font-size:13px}.role{font-weight:700}.role.admin{color:#6841d8}.role.user{color:#26734d}.empty{text-align:center;color:#697586;padding:25px}.meta{display:flex;justify-content:space-between;gap:10px;color:#697586;font-size:13px;margin-top:12px}
+.section{display:none}.section.active{display:block}.support-box{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}.support{padding:22px;border:1px solid #e6ebf2;border-radius:15px}.support strong{display:block;margin-bottom:7px}.note{background:#fff8df;border:1px solid #f0df9c;padding:14px;border-radius:12px;color:#6b5816;margin-top:18px}
+@media(max-width:850px){.side{width:78px;padding:20px 10px}.side h2{font-size:0;text-align:center}.side h2:after{content:"🛡️";font-size:22px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:20px}.main{margin-left:78px;width:calc(100% - 78px);padding:20px 3%}.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr}.support-box{grid-template-columns:1fr}}
+@media(max-width:520px){.stats{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px}.top h1{font-size:24px}}
 </style>
 </head>
 <body>
@@ -34,25 +38,74 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;bor
 </div>
 
 <div id="app" class="app hidden">
-<header class="top"><div><b>🛡️ My API Admin</b><span class="badge">ADMIN</span></div><button class="logout" onclick="logout()">Logout</button></header>
-<main class="wrap">
-<div class="title"><div><h1>Admin Dashboard</h1><div class="label">Registered users overview</div></div><button onclick="loadUsers()">↻ Refresh Users</button></div>
+<div class="layout">
+<aside class="side">
+<h2>My API Admin</h2>
+<nav class="nav">
+<button class="active" onclick="showSection('dashboard',this)">📊 Dashboard</button>
+<button onclick="showSection('usersSection',this)">👥 Users</button>
+<button onclick="showSection('support',this)">📞 Contact & Support</button>
+</nav>
+</aside>
+
+<main class="main">
+<div class="top">
+<div><h1 id="pageTitle">Dashboard</h1><div class="label">Manage and monitor your API</div></div>
+<div><span class="badge">ADMIN</span><button class="logout" onclick="logout()">Logout</button></div>
+</div>
+
+<section id="dashboard" class="section active">
 <div class="stats">
 <div class="stat"><div class="label">Total Users</div><div id="total" class="num">0</div></div>
 <div class="stat"><div class="label">Admin Users</div><div id="admins" class="num">0</div></div>
 <div class="stat"><div class="label">Normal Users</div><div id="normal" class="num">0</div></div>
+<div class="stat"><div class="label">API Status</div><div id="apiStatus" class="num" style="font-size:20px">Checking...</div></div>
 </div>
 <div class="panel">
-<table><thead><tr><th>ID</th><th>Username</th><th>Role</th></tr></thead><tbody id="users"><tr><td colspan="3" class="empty">Loading...</td></tr></tbody></table>
+<h3>Quick Actions</h3><div class="label">Useful controls for the current admin panel</div>
+<div class="toolbar" style="grid-template-columns:repeat(3,1fr)">
+<button class="refresh" onclick="showSection('usersSection',document.querySelectorAll('.nav button')[1])">👥 View Users</button>
+<button class="refresh" onclick="loadUsers()">↻ Refresh Data</button>
+<button class="refresh" onclick="showSection('support',document.querySelectorAll('.nav button')[2])">📞 Support</button>
 </div>
+</div>
+</section>
+
+<section id="usersSection" class="section">
+<div class="panel">
+<h3>Users</h3><div class="label">Search users by ID or username</div>
+<div class="toolbar">
+<input id="search" placeholder="🔎 Search username or ID" oninput="renderUsers()">
+<select id="roleFilter" onchange="renderUsers"><option value="all">All Roles</option><option value="admin">Admin</option><option value="user">Normal User</option></select>
+<button class="refresh" onclick="loadUsers()">↻ Refresh</button>
+</div>
+<table><thead><tr><th>ID</th><th>Username</th><th>Role</th></tr></thead><tbody id="users"><tr><td colspan="3" class="empty">Loading...</td></tr></tbody></table>
+<div class="meta"><span id="countText">0 users</span><span id="lastRefresh">Not refreshed yet</span></div>
+</div>
+</section>
+
+<section id="support" class="section">
+<div class="panel">
+<h3>📞 Contact & Support</h3><div class="label">Support buttons can be connected to your real contact details.</div>
+<div class="support-box">
+<div class="support"><strong>📱 WhatsApp</strong><span class="label">Add your WhatsApp number to enable this button.</span></div>
+<div class="support"><strong>✈️ Telegram</strong><span class="label">Add your Telegram username/link to enable this button.</span></div>
+<div class="support"><strong>✉️ Email</strong><span class="label">Add your support email to enable this button.</span></div>
+</div>
+<div class="note">No contact details have been added yet, so these are intentionally not fake links. Send me your WhatsApp, Telegram, or email details and I can connect the buttons.</div>
+</div>
+</section>
 </main>
+</div>
 </div>
 
 <script>
 const API="https://login-api-s95y.onrender.com";
 const tokenKey="admin_token";
+let allUsers=[];
 
 function showMsg(t){document.getElementById("msg").textContent=t}
+
 async function login(){
  const username=document.getElementById("username").value.trim();
  const password=document.getElementById("password").value;
@@ -63,30 +116,68 @@ async function login(){
   const d=await r.json();
   if(!r.ok){showMsg(d.message||"Login failed");return}
   if((d.user?.role||"user")!=="admin"){showMsg("Admin access required");return}
-  localStorage.setItem(tokenKey,d.token); openApp(); loadUsers();
+  localStorage.setItem(tokenKey,d.token);openApp();loadUsers();
  }catch(e){showMsg("API connection failed")}
 }
+
 async function loadUsers(){
  const token=localStorage.getItem(tokenKey);
  if(!token){logout();return}
  const body=document.getElementById("users");
  body.innerHTML='<tr><td colspan="3" class="empty">Loading...</td></tr>';
+ document.getElementById("apiStatus").textContent="Checking...";
  try{
   const r=await fetch(API+"/admin/users",{headers:{Authorization:"Bearer "+token}});
   const d=await r.json();
   if(r.status===401||r.status===403){logout();return}
   if(!r.ok)throw new Error();
-  const list=d.users||[];
-  document.getElementById("total").textContent=list.length;
-  const admins=list.filter(u=>u.role==="admin").length;
-  document.getElementById("admins").textContent=admins;
-  document.getElementById("normal").textContent=list.length-admins;
-  body.innerHTML=list.length?list.map(u=>'<tr><td>'+escapeHtml(u.id)+'</td><td>'+escapeHtml(u.username)+'</td><td class="role">'+escapeHtml(u.role||"user")+'</td></tr>').join(""):'<tr><td colspan="3" class="empty">No registered users</td></tr>';
- }catch(e){body.innerHTML='<tr><td colspan="3" class="empty">Could not load users</td></tr>'}
+  allUsers=d.users||[];
+  document.getElementById("apiStatus").innerHTML='<span class="status-dot"></span>Online';
+  document.getElementById("lastRefresh").textContent="Updated: "+new Date().toLocaleString();
+  renderUsers();updateStats();
+ }catch(e){
+  document.getElementById("apiStatus").textContent="Offline";
+  body.innerHTML='<tr><td colspan="3" class="empty">Could not load users</td></tr>';
+ }
 }
-function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+function updateStats(){
+ const admins=allUsers.filter(u=>u.role==="admin").length;
+ document.getElementById("total").textContent=allUsers.length;
+ document.getElementById("admins").textContent=admins;
+ document.getElementById("normal").textContent=allUsers.length-admins;
+}
+
+function renderUsers(){
+ const body=document.getElementById("users");
+ const search=(document.getElementById("search")?.value||"").trim().toLowerCase();
+ const role=document.getElementById("roleFilter")?.value||"all";
+ const list=allUsers.filter(u=>{
+  const matchesSearch=!search||String(u.id).toLowerCase().includes(search)||String(u.username).toLowerCase().includes(search);
+  const matchesRole=role==="all"||(u.role||"user")===role;
+  return matchesSearch&&matchesRole;
+ });
+ body.innerHTML=list.length?list.map(u=>{
+  const r=u.role||"user";
+  return '<tr><td>'+escapeHtml(u.id)+'</td><td>'+escapeHtml(u.username)+'</td><td class="role '+escapeHtml(r)+'">'+escapeHtml(r)+'</td></tr>';
+ }).join(""):'<tr><td colspan="3" class="empty">No matching users</td></tr>';
+ document.getElementById("countText").textContent=list.length+" of "+allUsers.length+" users";
+}
+
+function escapeHtml(v){
+ return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+
+function showSection(id,btn){
+ document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+ document.getElementById("pageTitle").textContent=id==="dashboard"?"Dashboard":id==="usersSection"?"Users":"Contact & Support";
+}
+
 function openApp(){document.getElementById("login").classList.add("hidden");document.getElementById("app").classList.remove("hidden")}
-function logout(){localStorage.removeItem(tokenKey);document.getElementById("app").classList.add("hidden");document.getElementById("login").classList.remove("hidden")}
+function logout(){localStorage.removeItem(tokenKey);document.getElementById("app").classList.add("hidden");document.getElementById("login").classList.remove("hidden");document.getElementById("password").value=""}
 if(localStorage.getItem(tokenKey)){openApp();loadUsers()}
 </script>
 </body>
