@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My API Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#182230}
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{width:min(420px,100%);background:#fff;border-radius:22px;padding:32px;box-shadow:0 20px 60px #18223020}
+.brand{font-size:25px;font-weight:800;margin-bottom:6px}.sub{color:#697586;margin-bottom:25px}
+input{width:100%;padding:14px 15px;margin:8px 0;border:1px solid #d9e0ea;border-radius:12px;font-size:15px;outline:none}
+button{border:0;border-radius:12px;padding:13px 18px;font-weight:700;cursor:pointer}
+.primary{width:100%;background:#182230;color:white;margin-top:10px}.logout{background:#fff;border:1px solid #d9e0ea}
+.msg{min-height:22px;margin-top:12px;font-size:14px}
+.hidden{display:none}.app{min-height:100vh}.top{background:#182230;color:#fff;padding:18px 5%;display:flex;align-items:center;justify-content:space-between}.badge{font-size:11px;background:#fff2;border:1px solid #fff4;padding:6px 9px;border-radius:20px;margin-left:8px}
+.wrap{width:min(1100px,92%);margin:30px auto}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}.stat{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 30px #18223010}.num{font-size:30px;font-weight:800;margin-top:8px}.label{color:#697586}
+.panel{background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 30px #18223010;overflow:auto}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;border-bottom:1px solid #edf0f4}th{color:#697586;font-size:13px}.role{font-weight:700}.empty{text-align:center;color:#697586;padding:25px}
+@media(max-width:700px){.stats{grid-template-columns:1fr}.top{padding:15px}.wrap{width:94%}.title{gap:12px;align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+<div class="card">
+<div class="brand">🛡️ My API Admin</div>
+<div class="sub">Secure administrator login</div>
+<input id="username" placeholder="Admin username" autocomplete="username">
+<input id="password" type="password" placeholder="Password" autocomplete="current-password">
+<button class="primary" onclick="login()">Login to Admin Panel</button>
+<div id="msg" class="msg"></div>
+</div>
+</div>
+
+<div id="app" class="app hidden">
+<header class="top"><div><b>🛡️ My API Admin</b><span class="badge">ADMIN</span></div><button class="logout" onclick="logout()">Logout</button></header>
+<main class="wrap">
+<div class="title"><div><h1>Admin Dashboard</h1><div class="label">Registered users overview</div></div><button onclick="loadUsers()">↻ Refresh Users</button></div>
+<div class="stats">
+<div class="stat"><div class="label">Total Users</div><div id="total" class="num">0</div></div>
+<div class="stat"><div class="label">Admin Users</div><div id="admins" class="num">0</div></div>
+<div class="stat"><div class="label">Normal Users</div><div id="normal" class="num">0</div></div>
+</div>
+<div class="panel">
+<table><thead><tr><th>ID</th><th>Username</th><th>Role</th></tr></thead><tbody id="users"><tr><td colspan="3" class="empty">Loading...</td></tr></tbody></table>
+</div>
+</main>
+</div>
+
+<script>
+const API="https://login-api-s95y.onrender.com";
+const tokenKey="admin_token";
+
+function showMsg(t){document.getElementById("msg").textContent=t}
+async function login(){
+ const username=document.getElementById("username").value.trim();
+ const password=document.getElementById("password").value;
+ if(!username||!password){showMsg("Username and password are required");return}
+ showMsg("Logging in...");
+ try{
+  const r=await fetch(API+"/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
+  const d=await r.json();
+  if(!r.ok){showMsg(d.message||"Login failed");return}
+  if((d.user?.role||"user")!=="admin"){showMsg("Admin access required");return}
+  localStorage.setItem(tokenKey,d.token); openApp(); loadUsers();
+ }catch(e){showMsg("API connection failed")}
+}
+async function loadUsers(){
+ const token=localStorage.getItem(tokenKey);
+ if(!token){logout();return}
+ const body=document.getElementById("users");
+ body.innerHTML='<tr><td colspan="3" class="empty">Loading...</td></tr>';
+ try{
+  const r=await fetch(API+"/admin/users",{headers:{Authorization:"Bearer "+token}});
+  const d=await r.json();
+  if(r.status===401||r.status===403){logout();return}
+  if(!r.ok)throw new Error();
+  const list=d.users||[];
+  document.getElementById("total").textContent=list.length;
+  const admins=list.filter(u=>u.role==="admin").length;
+  document.getElementById("admins").textContent=admins;
+  document.getElementById("normal").textContent=list.length-admins;
+  body.innerHTML=list.length?list.map(u=>'<tr><td>'+escapeHtml(u.id)+'</td><td>'+escapeHtml(u.username)+'</td><td class="role">'+escapeHtml(u.role||"user")+'</td></tr>').join(""):'<tr><td colspan="3" class="empty">No registered users</td></tr>';
+ }catch(e){body.innerHTML='<tr><td colspan="3" class="empty">Could not load users</td></tr>'}
+}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function openApp(){document.getElementById("login").classList.add("hidden");document.getElementById("app").classList.remove("hidden")}
+function logout(){localStorage.removeItem(tokenKey);document.getElementById("app").classList.add("hidden");document.getElementById("login").classList.remove("hidden")}
+if(localStorage.getItem(tokenKey)){openApp();loadUsers()}
+</script>
+</body>
+</html>
