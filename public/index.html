@@ -3,252 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>My API</title>
-
+  <title>My API Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f4f7;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    .box {
-      width: 90%;
-      max-width: 400px;
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-
-    h2, h3 {
-      text-align: center;
-    }
-
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      font-size: 16px;
-    }
-
-    hr {
-      margin: 25px 0;
-    }
-
-    #result {
-      margin-top: 20px;
-      text-align: center;
-      word-break: break-word;
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef2ff,#f8fafc);color:#172033}
+    .container{width:92%;max-width:900px;margin:30px auto}
+    .card{background:#fff;border-radius:20px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    h1,h2{margin-top:0}
+    .muted{color:#64748b}
+    input{width:100%;padding:13px;margin:7px 0;border:1px solid #d7dce5;border-radius:10px;font-size:15px}
+    button{border:0;border-radius:10px;padding:12px 16px;background:#2563eb;color:#fff;font-size:15px;cursor:pointer;margin-top:8px}
+    button.secondary{background:#475569}
+    button.danger{background:#dc2626}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
+    .stat{padding:20px;border-radius:16px;background:#f8fafc;border:1px solid #e5e7eb}
+    .stat strong{display:block;font-size:24px;margin-top:8px}
+    .hidden{display:none}
+    #message{margin-top:15px;padding:12px;border-radius:10px}
+    .success{background:#dcfce7;color:#166534}
+    .error{background:#fee2e2;color:#991b1b}
+    pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;padding:15px;border-radius:12px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
   </style>
 </head>
-
 <body>
+  <div class="container">
+    <div id="authCard" class="card">
+      <h1>🔐 My API</h1>
+      <p class="muted">Register or login to continue.</p>
 
-  <div class="box">
+      <h2>Register</h2>
+      <input id="regUsername" type="text" placeholder="Username">
+      <input id="regPassword" type="password" placeholder="Password">
+      <button onclick="register()">Create Account</button>
 
-    <h2>🔐 My API</h2>
+      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
 
-    <!-- REGISTER -->
-    <h3>Register</h3>
+      <h2>Login</h2>
+      <input id="username" type="text" placeholder="Username">
+      <input id="password" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <div id="authMessage"></div>
+    </div>
 
-    <input
-      type="text"
-      id="regUsername"
-      placeholder="Username"
-    >
+    <div id="dashboard" class="hidden">
+      <div class="card">
+        <div class="top">
+          <div>
+            <p class="muted">Welcome back 👋</p>
+            <h1 id="welcomeName">Dashboard</h1>
+          </div>
+          <button class="danger" onclick="logout()">Logout</button>
+        </div>
 
-    <input
-      type="password"
-      id="regPassword"
-      placeholder="Password"
-    >
+        <div class="grid">
+          <div class="stat">
+            <span class="muted">Username</span>
+            <strong id="dashUsername">-</strong>
+          </div>
+          <div class="stat">
+            <span class="muted">Role</span>
+            <strong id="dashRole">-</strong>
+          </div>
+          <div class="stat">
+            <span class="muted">Login Status</span>
+            <strong>🟢 Active</strong>
+          </div>
+        </div>
 
-    <button onclick="register()">
-      Register
-    </button>
+        <h2>Quick Actions</h2>
+        <div class="actions">
+          <button onclick="loadProfile()">👤 My Profile</button>
+          <button id="adminButton" class="secondary hidden" onclick="loadAdminUsers()">🛡️ Admin Panel</button>
+        </div>
 
+        <div id="profileBox" class="hidden" style="margin-top:20px">
+          <h2>Profile</h2>
+          <pre id="profileData"></pre>
+        </div>
 
-    <hr>
-
-
-    <!-- LOGIN -->
-    <h3>Login</h3>
-
-    <input
-      type="text"
-      id="username"
-      placeholder="Username"
-    >
-
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
-
-    <button onclick="login()">
-      Login
-    </button>
-
-
-    <div id="result"></div>
-
+        <div id="adminBox" class="hidden" style="margin-top:20px">
+          <h2>Admin Users</h2>
+          <pre id="adminData"></pre>
+        </div>
+      </div>
+    </div>
   </div>
 
-
   <script>
+    const tokenKey = "token";
 
-    // =========================
-    // REGISTER
-    // =========================
+    function showMessage(message, type="success") {
+      const el = document.getElementById("authMessage");
+      el.className = type;
+      el.innerHTML = message;
+    }
 
     async function register() {
+      const username = document.getElementById("regUsername").value.trim();
+      const password = document.getElementById("regPassword").value;
 
-      const username =
-        document.getElementById("regUsername").value;
-
-      const password =
-        document.getElementById("regPassword").value;
-
-      const result =
-        document.getElementById("result");
-
-
-      try {
-
-        const response = await fetch("/register", {
-
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            username: username,
-            password: password
-          })
-
-        });
-
-
-        const data = await response.json();
-
-
-        if (data.success) {
-
-          result.innerHTML =
-            "✅ Registration successful!<br>" +
-            "Username: " +
-            data.user.username;
-
-        } else {
-
-          result.innerHTML =
-            "❌ " + data.message;
-
-        }
-
-      } catch (error) {
-
-        result.innerHTML =
-          "❌ Server connection failed";
-
+      if (!username || !password) {
+        showMessage("Username and password are required", "error");
+        return;
       }
 
+      try {
+        const response = await fetch("/register", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({username, password})
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          showMessage("✅ Registration successful. Now login.");
+          document.getElementById("username").value = username;
+          document.getElementById("password").value = "";
+        } else {
+          showMessage("❌ " + data.message, "error");
+        }
+      } catch (e) {
+        showMessage("❌ Server connection failed", "error");
+      }
     }
-
-
-    // =========================
-    // LOGIN
-    // =========================
 
     async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
 
-      const username =
-        document.getElementById("username").value;
-
-      const password =
-        document.getElementById("password").value;
-
-      const result =
-        document.getElementById("result");
-
-
-      try {
-
-        const response = await fetch("/login", {
-
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            username: username,
-            password: password
-          })
-
-        });
-
-
-        const data = await response.json();
-
-
-        if (data.success) {
-
-          localStorage.setItem(
-            "token",
-            data.token
-          );
-
-
-          result.innerHTML =
-            "✅ Login successful!<br><br>" +
-            "Username: " +
-            data.user.username +
-            "<br>" +
-            "Role: " +
-            data.user.role;
-
-        } else {
-
-          result.innerHTML =
-            "❌ " + data.message;
-
-        }
-
-      } catch (error) {
-
-        result.innerHTML =
-          "❌ Server connection failed";
-
+      if (!username || !password) {
+        showMessage("Username and password are required", "error");
+        return;
       }
 
+      try {
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({username, password})
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          showMessage("❌ " + data.message, "error");
+          return;
+        }
+
+        localStorage.setItem(tokenKey, data.token);
+        showDashboard(data.user);
+      } catch (e) {
+        showMessage("❌ Server connection failed", "error");
+      }
     }
 
-  </script>
+    function showDashboard(user) {
+      document.getElementById("authCard").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("welcomeName").textContent = user.username + "'s Dashboard";
+      document.getElementById("dashUsername").textContent = user.username;
+      document.getElementById("dashRole").textContent = user.role || "user";
 
+      if ((user.role || "user") === "admin") {
+        document.getElementById("adminButton").classList.remove("hidden");
+      } else {
+        document.getElementById("adminButton").classList.add("hidden");
+      }
+    }
+
+    async function loadProfile() {
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return logout();
+
+      try {
+        const response = await fetch("/profile", {
+          headers: {"Authorization":"Bearer " + token}
+        });
+        const data = await response.json();
+
+        document.getElementById("profileBox").classList.remove("hidden");
+        document.getElementById("profileData").textContent = JSON.stringify(data, null, 2);
+
+        if (response.status === 401 || response.status === 403) logout();
+      } catch (e) {
+        document.getElementById("profileBox").classList.remove("hidden");
+        document.getElementById("profileData").textContent = "Server connection failed";
+      }
+    }
+
+    async function loadAdminUsers() {
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return logout();
+
+      try {
+        const response = await fetch("/admin/users", {
+          headers: {"Authorization":"Bearer " + token}
+        });
+        const data = await response.json();
+
+        document.getElementById("adminBox").classList.remove("hidden");
+        document.getElementById("adminData").textContent = JSON.stringify(data, null, 2);
+
+        if (response.status === 401 || response.status === 403) {
+          document.getElementById("adminData").textContent = data.message || "Admin access required";
+        }
+      } catch (e) {
+        document.getElementById("adminBox").classList.remove("hidden");
+        document.getElementById("adminData").textContent = "Server connection failed";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem(tokenKey);
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("authCard").classList.remove("hidden");
+      document.getElementById("profileBox").classList.add("hidden");
+      document.getElementById("adminBox").classList.add("hidden");
+      document.getElementById("adminButton").classList.add("hidden");
+      showMessage("You have been logged out.");
+    }
+
+    window.addEventListener("load", async () => {
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return;
+
+      try {
+        const response = await fetch("/profile", {
+          headers: {"Authorization":"Bearer " + token}
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showDashboard(data.user);
+        } else {
+          localStorage.removeItem(tokenKey);
+        }
+      } catch (e) {
+        // Keep login screen if the server is temporarily unavailable.
+      }
+    });
+  </script>
 </body>
 </html>
