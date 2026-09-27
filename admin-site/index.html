@@ -20,7 +20,7 @@ input:focus,select:focus{border-color:#6875f5}.primary{width:100%;border:0;borde
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}.stat,.panel{background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 30px #18223010}.num{font-size:30px;font-weight:800;margin-top:8px}.panel{margin-top:18px}.panel h3{margin:0 0 5px}.toolbar{display:grid;grid-template-columns:1fr 180px auto;gap:10px;margin:18px 0}
 .refresh{border:0;border-radius:12px;padding:12px 17px;font-weight:700;cursor:pointer;background:#182230;color:#fff}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;border-bottom:1px solid #edf0f4}th{color:#697586;font-size:13px}.role{font-weight:700}.role.admin{color:#6841d8}.role.user{color:#26734d}.empty{text-align:center;color:#697586;padding:25px}.meta{display:flex;justify-content:space-between;gap:10px;color:#697586;font-size:13px;margin-top:12px}
-.section{display:none}.section.active{display:block}.support-box{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}.support{padding:22px;border:1px solid #e6ebf2;border-radius:15px}.support strong{display:block;margin-bottom:7px}.note{background:#fff8df;border:1px solid #f0df9c;padding:14px;border-radius:12px;color:#6b5816;margin-top:18px}
+.section{display:none}.section.active{display:block}.support-box{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}.support{padding:22px;border:1px solid #e6ebf2;border-radius:15px}.support strong{display:block;margin-bottom:7px}.modal{position:fixed;inset:0;background:#18223066;display:grid;place-items:center;padding:20px;z-index:10}.modal-card{width:min(430px,100%);background:#fff;border-radius:20px;padding:24px;box-shadow:0 25px 80px #18223030}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.modal-head h3{margin:0}.close{border:0;background:#eef2f7;border-radius:9px;padding:8px 10px;cursor:pointer}.modal-card input,.modal-card select{margin-bottom:10px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}.modal-actions .refresh,.modal-actions .logout{margin:0}.action-btn{border:1px solid #d9e0ea;background:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;margin-right:5px}.action-btn.delete{color:#b42318}.note{background:#fff8df;border:1px solid #f0df9c;padding:14px;border-radius:12px;color:#6b5816;margin-top:18px}
 @media(max-width:850px){.side{width:78px;padding:20px 10px}.side h2{font-size:0;text-align:center}.side h2:after{content:"🛡️";font-size:22px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:20px}.main{margin-left:78px;width:calc(100% - 78px);padding:20px 3%}.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr}.support-box{grid-template-columns:1fr}}
 @media(max-width:520px){.stats{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px}.top h1{font-size:24px}}
 </style>
@@ -65,8 +65,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;bor
 <h3>Quick Actions</h3><div class="label">Useful controls for the current admin panel</div>
 <div class="toolbar" style="grid-template-columns:repeat(3,1fr)">
 <button class="refresh" onclick="showSection('usersSection',document.querySelectorAll('.nav button')[1])">👥 View Users</button>
+<button class="refresh" onclick="openUserModal()">➕ Add User</button>
 <button class="refresh" onclick="loadUsers()">↻ Refresh Data</button>
-<button class="refresh" onclick="showSection('support',document.querySelectorAll('.nav button')[2])">📞 Support</button>
 </div>
 </div>
 </section>
@@ -76,10 +76,10 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;bor
 <h3>Users</h3><div class="label">Search users by ID or username</div>
 <div class="toolbar">
 <input id="search" placeholder="🔎 Search username or ID" oninput="renderUsers()">
-<select id="roleFilter" onchange="renderUsers"><option value="all">All Roles</option><option value="admin">Admin</option><option value="user">Normal User</option></select>
+<select id="roleFilter" onchange="renderUsers()"><option value="all">All Roles</option><option value="admin">Admin</option><option value="user">Normal User</option></select>
 <button class="refresh" onclick="loadUsers()">↻ Refresh</button>
 </div>
-<table><thead><tr><th>ID</th><th>Username</th><th>Role</th></tr></thead><tbody id="users"><tr><td colspan="3" class="empty">Loading...</td></tr></tbody></table>
+<table><thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead><tbody id="users"><tr><td colspan="4" class="empty">Loading...</td></tr></tbody></table>
 <div class="meta"><span id="countText">0 users</span><span id="lastRefresh">Not refreshed yet</span></div>
 </div>
 </section>
@@ -99,10 +99,21 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;bor
 </div>
 </div>
 
+<div id="modal" class="modal hidden">
+<div class="modal-card">
+<div class="modal-head"><h3 id="modalTitle">Add User</h3><button class="close" onclick="closeUserModal()">✕</button></div>
+<input id="formUsername" placeholder="Username" autocomplete="off">
+<input id="formPassword" type="password" placeholder="Password">
+<select id="formRole"><option value="user">Normal User</option><option value="admin">Admin</option></select>
+<div id="formMsg" class="msg"></div>
+<div class="modal-actions"><button class="logout" onclick="closeUserModal()">Cancel</button><button class="refresh" onclick="saveUser()">Save User</button></div>
+</div>
+</div>
+
 <script>
 const API="https://login-api-s95y.onrender.com";
 const tokenKey="admin_token";
-let allUsers=[];
+let allUsers=[]; let editingId=null;
 
 function showMsg(t){document.getElementById("msg").textContent=t}
 
@@ -159,11 +170,59 @@ function renderUsers(){
  });
  body.innerHTML=list.length?list.map(u=>{
   const r=u.role||"user";
-  return '<tr><td>'+escapeHtml(u.id)+'</td><td>'+escapeHtml(u.username)+'</td><td class="role '+escapeHtml(r)+'">'+escapeHtml(r)+'</td></tr>';
- }).join(""):'<tr><td colspan="3" class="empty">No matching users</td></tr>';
+  return '<tr><td>'+escapeHtml(u.id)+'</td><td>'+escapeHtml(u.username)+'</td><td class="role '+escapeHtml(r)+'">'+escapeHtml(r)+'</td><td><button class="action-btn" onclick="openUserModal('+u.id+')">✏️ Edit</button><button class="action-btn delete" onclick="deleteUser('+u.id+')">🗑️ Delete</button></td></tr>';
+ }).join(""):'<tr><td colspan="4" class="empty">No matching users</td></tr>';
  document.getElementById("countText").textContent=list.length+" of "+allUsers.length+" users";
 }
 
+function openUserModal(id=null){
+ editingId=id;
+ document.getElementById("modal").classList.remove("hidden");
+ document.getElementById("modalTitle").textContent=id?"Edit User":"Add User";
+ document.getElementById("formMsg").textContent="";
+ if(id){
+  const u=allUsers.find(x=>Number(x.id)===Number(id));
+  if(!u)return;
+  document.getElementById("formUsername").value=u.username;
+  document.getElementById("formPassword").value="";
+  document.getElementById("formPassword").placeholder="New password (leave blank to keep)";
+  document.getElementById("formRole").value=u.role||"user";
+ }else{
+  document.getElementById("formUsername").value="";
+  document.getElementById("formPassword").value="";
+  document.getElementById("formPassword").placeholder="Password";
+  document.getElementById("formRole").value="user";
+ }
+}
+function closeUserModal(){document.getElementById("modal").classList.add("hidden");editingId=null}
+async function saveUser(){
+ const username=document.getElementById("formUsername").value.trim();
+ const password=document.getElementById("formPassword").value;
+ const role=document.getElementById("formRole").value;
+ const msg=document.getElementById("formMsg");
+ if(!username||(!editingId&&!password)){msg.textContent=editingId?"Username is required":"Username and password are required";return}
+ const body={username,role}; if(password)body.password=password;
+ const token=localStorage.getItem(tokenKey);
+ msg.textContent="Saving...";
+ try{
+  const r=await fetch(API+(editingId?"/admin/users/"+editingId:"/admin/users"),{method:editingId?"PUT":"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(!r.ok){msg.textContent=d.message||"Save failed";return}
+  closeUserModal(); await loadUsers(); showSection("usersSection",document.querySelectorAll(".nav button")[1]);
+ }catch(e){msg.textContent="API connection failed"}
+}
+async function deleteUser(id){
+ const u=allUsers.find(x=>Number(x.id)===Number(id));
+ if(!u)return;
+ if(!confirm("Delete user '"+u.username+"'?"))return;
+ const token=localStorage.getItem(tokenKey);
+ try{
+  const r=await fetch(API+"/admin/users/"+id,{method:"DELETE",headers:{Authorization:"Bearer "+token}});
+  const d=await r.json();
+  if(!r.ok){alert(d.message||"Delete failed");return}
+  await loadUsers();
+ }catch(e){alert("API connection failed")}
+}
 function escapeHtml(v){
  return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 }
