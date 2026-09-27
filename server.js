@@ -96,6 +96,56 @@ app.get("/profile", authenticateToken, (req, res) => {
   res.json({success:true,message:"Welcome to your profile",user:req.user});
 });
 
+
+app.post("/admin/users", authenticateToken, requireAdmin, async (req, res) => {
+  const { username, password, role = "user" } = req.body;
+  if (!username || !password) return res.status(400).json({success:false,message:"Username and password are required"});
+  if (!["admin","user"].includes(role)) return res.status(400).json({success:false,message:"Invalid role"});
+  const users = JSON.parse(fs.readFileSync(file, "utf8"));
+  if (users.some(user => user.username === username)) return res.status(409).json({success:false,message:"Username already exists"});
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const nextId = users.reduce((max, user) => Math.max(max, Number(user.id) || 0), 0) + 1;
+  const newUser = { id:nextId, username, password:hashedPassword, role };
+  users.push(newUser);
+  fs.writeFileSync(file, JSON.stringify(users, null, 2));
+  res.json({success:true,message:"User created successfully",user:{id:newUser.id,username:newUser.username,role:newUser.role}});
+});
+
+app.put("/admin/users/:id", authenticateToken, requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  const { username, password, role } = req.body;
+  const users = JSON.parse(fs.readFileSync(file, "utf8"));
+  const index = users.findIndex(user => Number(user.id) === id);
+  if (index === -1) return res.status(404).json({success:false,message:"User not found"});
+  if (username && users.some((user, i) => i !== index && user.username === username)) {
+    return res.status(409).json({success:false,message:"Username already exists"});
+  }
+  if (username) users[index].username = username;
+  if (role !== undefined) {
+    if (!["admin","user"].includes(role)) return res.status(400).json({success:false,message:"Invalid role"});
+    if (users[index].username === process.env.ADMIN_USERNAME && role !== "admin") {
+      return res.status(400).json({success:false,message:"Primary admin cannot be demoted"});
+    }
+    users[index].role = role;
+  }
+  if (password) users[index].password = await bcrypt.hash(password, 10);
+  fs.writeFileSync(file, JSON.stringify(users, null, 2));
+  res.json({success:true,message:"User updated successfully",user:{id:users[index].id,username:users[index].username,role:users[index].role||"user"}});
+});
+
+app.delete("/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  const users = JSON.parse(fs.readFileSync(file, "utf8"));
+  const index = users.findIndex(user => Number(user.id) === id);
+  if (index === -1) return res.status(404).json({success:false,message:"User not found"});
+  if (users[index].username === req.user.username || users[index].username === process.env.ADMIN_USERNAME) {
+    return res.status(400).json({success:false,message:"Primary/current admin cannot be deleted"});
+  }
+  const deleted = users.splice(index, 1)[0];
+  fs.writeFileSync(file, JSON.stringify(users, null, 2));
+  res.json({success:true,message:"User deleted successfully",user:{id:deleted.id,username:deleted.username,role:deleted.role||"user"}});
+});
+
 app.get("/admin/users", authenticateToken, requireAdmin, (req, res) => {
   const users = JSON.parse(fs.readFileSync(file, "utf8"));
   const safeUsers = users.map(user => ({
